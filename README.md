@@ -1,127 +1,108 @@
-# 🛡️ IoT Sentinel - Ethical IoT Auditing Toolkit
-[![License: GPLv3+Ethical](https://img.shields.io/badge/License-GPLv3_Ethical-blue.svg)](https://github.com/KevinDevSecOps/IoT-Sentinel/blob/main/LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-yellowgreen)](https://www.python.org/)
-[![Platforms](https://img.shields.io/badge/Platforms-Flipper%20Zero%2C%20HackRF%2C%20ESP32-orange)](https://github.com/KevinDevSecOps/IoT-Sentinel)
-[![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen)](CONTRIBUTING.md)
+# 🛡️ IoT Sentinel - Supercharged IoT Auditing Toolkit
+[![License](https://img.shields.io/badge/License-GPLv3_Ethical-blue)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-yellowgreen)](https://python.org)
+[![Devices](https://img.shields.io/badge/Devices-Flipper%2C%20HackRF%2C%20ESP32-orange)](https://github.com/KevinDevSecOps/IoT-Sentinel)
 
-**Un sistema integrado de auditoría ética para redes IoT usando Flipper Zero, HackRF y ESP32.**  
-*"Hackea el mundo físico... con responsabilidad"* 🔐
+**El Swiss Army Knife del hacking ético en IoT**, con soporte para:
+- 🐬 Flipper Zero (NFC/Sub-GHz)  
+- 📡 HackRF + PortaPack (RF Fuzzing)  
+- 📶 ESP32 StickPlus2 (WiFi/BLE)  
 
----
-
-## 📌 Tabla de Contenidos
-- [Características](#-características)
-- [Dispositivos Soportados](#-dispositivos-soportados)
-- [Instalación](#-instalación)
-- [Uso Rápido](#-uso-rápido)
-- [Demo](#-demo)
-- [Roadmap](#-roadmap)
-- [Licencia](#-licencia)
-- [Contribuir](#-contribuir)
+> "Por una IoT más segura, sin dejar de ser cool" - KevinDevSecOps
 
 ---
 
-## ✨ Características
-| Módulo | Tecnología | Función |
-|--------|-----------|---------|
-| **RFID/NFC Auditor** | Flipper Zero | Detección de tags clonables y credenciales inseguras |
-| **RF Fuzzer** | HackRF + PortaPack | Pruebas de señales en 315/433/868MHz |
-| **WiFi/BLE Sniffer** | ESP32 (StickPlus2) | Análisis de dispositivos IoT inseguros |
-| **Reporte Automatizado** | Python + LaTeX | Generación de informes PDF profesionales |
-
----
-
-## 📟 Dispositivos Soportados
-| Dispositivo | Firmware Recomendado | Uso Principal |
-|-------------|----------------------|---------------|
-| Flipper Zero | [Xtreme Firmware](https://github.com/Flipper-XFW/Xtreme-Firmware) | RFID/NFC/Sub-GHz |
-| HackRF One | [Mayhem PortaPack](https://github.com/eried/portapack-mayhem) | RF Fuzzing |
-| ESP32 StickPlus2 | [ESP32 Marauder](https://github.com/justcallmekoko/ESP32Marauder) | WiFi/BLE Audit |
-
----
-
-## ⚙️ Instalación
+## 📦 **Instalación Rápida**
 ```bash
-# Clonar el repositorio
+# Clona el repo
 git clone https://github.com/KevinDevSecOps/IoT-Sentinel.git
 cd IoT-Sentinel
 
-# Instalar dependencias
+# Instala dependencias
 pip install -r requirements.txt
 
-# Configurar dispositivos
-python setup.py --flipper /dev/ttyACM0 --hackrf serial:12345
+# Configura dispositivos
+python setup.py --flipper /dev/ttyACM0 --esp32 /dev/ttyUSB0
 ```
 
 ---
 
-## 🚀 Uso Rápido
-### Escaneo NFC básico (Flipper Zero)
-```python
-from iot_sentinel import FlipperAudit
+## 🎯 **Características Estrella**
+| Módulo          | Dispositivo       | Función                          |
+|-----------------|-------------------|----------------------------------|
+| **NFC Auditor** | Flipper Zero      | Clonación ética de tags          |
+| **RF Fuzzer**   | HackRF            | Inyección de señales OOK/ASK     |
+| **WiFi Spy**    | ESP32 StickPlus2  | Sniffing de paquetes WiFi/BLE    |
 
-flipper = FlipperAudit()
-flipper.scan_nfc(output_format="json")
+---
+
+## 💻 **Ejemplos de Uso**
+### 1. Escaneo WiFi con ESP32
+```python
+from iot_sentinel.core import StickPlus2
+
+esp32 = StickPlus2()
+for network in esp32.scan_wifi():
+    print(f"📶 {network.ssid} (Canal: {network.channel})")
 ```
 
-### Fuzzing RF (HackRF)
+### 2. Fuzzing RF con HackRF
 ```bash
-python3 -m iot_sentinel.rf_fuzzer --freq 433.92M --protocol OOK --timeout 60
+python -m iot_sentinel.core.hackrf --freq 433M --protocol OOK
 ```
-### 🎯 Características
-- Soporta protocolos **OOK, ASK, FSK**.
-- Escaneo por rangos de frecuencia con **multihilo**.
-- Modo ético: Incluye `stop()` para abortar operaciones.
 
-### 🛠️ Uso Básico
+### 3. Lectura NFC con Flipper
 ```python
-from iot_sentinel.core import HackRFFuzzer, RFProtocol
+from iot_sentinel.core import FlipperNFC
 
-fuzzer = HackRFFuzzer(min_freq="300M", max_freq="900M")
-result = fuzzer.fuzz_single("433M", RFProtocol.OOK)
-print(f"Vulnerable: {result.is_vulnerable}")
----
-
-## 📸 Demo
-![Demo GIF](docs/images/demo.gif)  
-*Ejemplo: Detección de tag NFC vulnerable*
+flipper = FlipperNFC()
+tag = flipper.scan_tag()
+print(f"🔑 UID: {tag.uid} - Vulnerable: {tag.is_vulnerable}")
+```
 
 ---
 
-## 🗺️ Roadmap
-- [x] Soporte para Flipper Zero (NFC/Sub-GHz)
-- [ ] Integración con Wireshark (ESP32)
-- [ ] Módulo de análisis de señales digitales (HackRF)
-- [ ] Dockerización del entorno
+## 📸 **Demo Visual**
+![Demo ESP32](docs/images/esp32_demo.gif)  
+*Capturando paquetes WiFi en modo promiscuo*
 
 ---
 
-## 📜 Licencia
-Este proyecto usa **GNU GPLv3 + Ethical Clause** ([Ver LICENSE](LICENSE)).  
-⚠️ **Importante**: 
+## 🛠️ **Configuración de Dispositivos**
+| Dispositivo       | Firmware Recomendado | Guía de Instalación              |
+|-------------------|----------------------|----------------------------------|
+| ESP32 StickPlus2  | [Marauder](https://github.com/justcallmekoko/ESP32Marauder) | `flash_marauder.sh` |
+| Flipper Zero      | [Xtreme](https://github.com/Flipper-XFW/Xtreme-Firmware)     | [Wiki](https://flipperzero.one) |
+
+---
+
+## 🤝 **Cómo Contribuir**
+1. Haz fork del proyecto.
+2. Crea una rama: `git checkout -b feature/nueva-funcion`.
+3. Haz commit: `git commit -m "feat: Add X"`.
+4. Haz push: `git push origin feature/nueva-funcion`.
+5. Abre un **Pull Request**.
+
+---
+
+## 📜 **Licencia y Ética**
+Este proyecto usa **GPLv3 + Ethical Clause**:  
 ```diff
-- SOLO para pruebas autorizadas. El uso no ético anula la licencia.
++ Úsalo solo en redes propias o con permiso por escrito.  
+- El mal uso conlleva responsabilidad legal (Art. 197 CP, GDPR, etc.).
 ```
 
 ---
 
-## 🤝 Contribuir
-1. Haz fork del proyecto
-2. Crea una rama: `git checkout -b feature/nueva-funcion`
-3. Haz commit: `git commit -m "feat: Añade X"`
-4. Haz push: `git push origin feature/nueva-funcion`
-5. Abre un **Pull Request**
-
----
-
-## 🌟 Créditos
-- **KevinDevSecOps** - Autor principal
-- **Comunidad Flipper Zero** - Firmware e inspiración
+## 🌟 **Créditos**
+- **KevinDevSecOps** - Autor principal.  
+- **Comunidad Marauder** - Firmware ESP32.  
+- **Flipper Zero Team** - Inspiración.  
 
 ---
 
 ```python
-# Código con ❤️ para hackers éticos
-while world.needs_securing():
-    iot_sentinel.audit(world)
+# Código con ❤️ para la comunidad
+while hacking_ethical == True:
+    print("¡Hackea el mundo, mejóralo, y repite!")
 ```
