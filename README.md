@@ -68,7 +68,18 @@ flipper.scan_nfc(output_format="json")
 ```bash
 python3 -m iot_sentinel.rf_fuzzer --freq 433.92M --protocol OOK --timeout 60
 ```
+### 🎯 Características
+- Soporta protocolos **OOK, ASK, FSK**.
+- Escaneo por rangos de frecuencia con **multihilo**.
+- Modo ético: Incluye `stop()` para abortar operaciones.
 
+### 🛠️ Uso Básico
+```python
+from iot_sentinel.core import HackRFFuzzer, RFProtocol
+
+fuzzer = HackRFFuzzer(min_freq="300M", max_freq="900M")
+result = fuzzer.fuzz_single("433M", RFProtocol.OOK)
+print(f"Vulnerable: {result.is_vulnerable}")
 ---
 
 ## 📸 Demo
