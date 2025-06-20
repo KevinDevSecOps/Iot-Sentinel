@@ -1,0 +1,4 @@
+pyserial==3.5
+numpy==1.24.0
+scapy==2.5.0
+pyyaml==6.0
