@@ -1,0 +1,113 @@
+import serial
+import json
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import List, Dict, Optional
+import time
+
+class PacketType(Enum):
+    WIFI_BEACON = auto()
+    WIFI_DEAUTH = auto()
+    BLE_ADVERT = auto()
+
+@dataclass
+class NetworkPacket:
+    type: PacketType
+    source: str
+    destination: str
+    timestamp: float
+    raw_data: bytes
+
+class StickPlus2:
+    def __init__(self, port: str = "/dev/ttyUSB0", baudrate: int = 115200):
+        self.serial = serial.Serial(port, baudrate, timeout=10)
+        self._setup_marauder()
+
+    def _setup_marauder(self) -> None:
+        """Configura el ESP32 en modo Marauder."""
+        self._send_command("stop")  # Asegura que no hay procesos previos
+        self._send_command("mode wifi")  # Modo WiFi por defecto
+
+    def _send_command(self, cmd: str) -> str:
+        """Envía comandos al StickPlus2 y retorna la salida."""
+        self.serial.write(f"{cmd}\n".encode())
+        return self._read_until("END")
+
+    def _read_until(self, delimiter: str) -> str:
+        """Lee del serial hasta encontrar el delimitador."""
+        output = []
+        while True:
+            line = self.serial.readline().decode(errors="ignore").strip()
+            if delimiter in line:
+                break
+            output.append(line)
+        return "\n".join(output)
+
+    def sniff_packets(self, duration: int = 60) -> List[NetworkPacket]:
+        """
+        Captura paquetes WiFi/BLE en modo promiscuo.
+        
+        Args:
+            duration: Tiempo en segundos para capturar.
+        Returns:
+            Lista de paquetes estructurados.
+        """
+        packets = []
+        start_time = time.time()
+        
+        self._send_command("sniff raw")  # Inicia el sniffer
+        
+        while (time.time() - start_time) < duration:
+            raw_line = self.serial.readline().decode(errors="ignore")
+            if not raw_line.strip():
+                continue
+                
+            packet = self._parse_packet(raw_line)
+            if packet:
+                packets.append(packet)
+        
+        self._send_command("stop")  # Detiene el sniffer
+        return packets
+
+    def _parse_packet(self, raw_data: str) -> Optional[NetworkPacket]:
+        """Convierte datos crudos en paquetes estructurados."""
+        try:
+            if "BEACON" in raw_data:
+                parts = raw_data.split()
+                return NetworkPacket(
+                    type=PacketType.WIFI_BEACON,
+                    source=parts[2],
+                    destination="FF:FF:FF:FF:FF:FF",
+                    timestamp=time.time(),
+                    raw_data=raw_data.encode()
+                )
+            elif "DEAUTH" in raw_data:
+                # Ejemplo: "DEAUTH SRC=AA:BB:CC:DD:EE:FF DST=11:22:33:44:55:66"
+                src = raw_data.split("SRC=")[1].split()[0]
+                dst = raw_data.split("DST=")[1].split()[0]
+                return NetworkPacket(
+                    type=PacketType.WIFI_DEAUTH,
+                    source=src,
+                    destination=dst,
+                    timestamp=time.time(),
+                    raw_data=raw_data.encode()
+                )
+            elif "BLE" in raw_data:
+                # Ejemplo: "BLE ADVERT MAC=AA:BB:CC:DD:EE:FF RSSI=-75"
+                mac = raw_data.split("MAC=")[1].split()[0]
+                return NetworkPacket(
+                    type=PacketType.BLE_ADVERT,
+                    source=mac,
+                    destination="N/A",
+                    timestamp=time.time(),
+                    raw_data=raw_data.encode()
+                )
+        except Exception as e:
+            print(f"[!] Error parsing packet: {e}")
+        return None
+
+    def save_to_pcap(self, packets: List[NetworkPacket], filename: str) -> None:
+        """Guarda paquetes en formato PCAP (compatible con Wireshark)."""
+        with open(filename, "wb") as f:
+            # Implementar escritura en formato PCAP aquí
+            pass  # Placeholder para la implementación real
