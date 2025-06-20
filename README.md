@@ -45,6 +45,7 @@ esp32 = StickPlus2()
 for network in esp32.scan_wifi():
     print(f"📶 {network.ssid} (Canal: {network.channel})")
 ```
+ ```python
 from iot_sentinel.core import StickPlus2
 
 # Configuración
@@ -59,6 +60,15 @@ print(f"📡 Capturados {len(deauth_packets)} paquetes de deautenticación")
 
 # Guarda en PCAP (para análisis en Wireshark)
 esp32.save_to_pcap(packets, "captura.pcap")
+```
+
+---
+
+### **📌 Qué Hace Este Código**
+1. **Sniffing en Tiempo Real**: Captura paquetes WiFi (Beacons, Deauth) y BLE.  
+2. **Parseo Inteligente**: Convierte datos crudos en objetos estructurados.  
+3. **Exportación a PCAP**: Compatible con Wireshark para análisis avanzado.  
+4. **Modo Ético**: Incluye validaciones para evitar uso malicioso.  
 
 ### 2. Fuzzing RF con HackRF
 ```bash
