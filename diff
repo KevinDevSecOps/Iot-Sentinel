@@ -1,0 +1,10 @@
+- El fuzzing de frecuencias está regulado por ley. Ver [SECURITY.md](SECURITY.md).
+
+---
+
+## **🔐 Consideraciones Éticas**
+1. **Auto-detección de frecuencias prohibidas** (ej: bandas de emergencia).  
+   ```python
+   BANNED_FREQS = ["108M", "137M"]  # Aviónica, EMS
+   if freq in BANNED_FREQS:
+       raise ValueError("¡Frecuencia prohibida por ley!")
