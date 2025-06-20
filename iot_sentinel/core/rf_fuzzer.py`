@@ -1,0 +1,36 @@
+def fuzz_range(self, protocol: RFProtocol, step="1M", threads=4, timeout_ms=100):
+    """Escanea un rango de frecuencias con fuzzing multihilo."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def _fuzz_single_thread(freq: str) -> FuzzingResult:
+        return self.fuzz_single(freq, protocol)
+
+    freqs = self._generate_frequencies(step)
+    results = []
+    
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = {executor.submit(_fuzz_single_thread, freq): freq for freq in freqs}
+        
+        for future in as_completed(futures):
+            if self._stop_signal:
+                executor.shutdown(wait=False)
+                break
+                
+            try:
+                result = future.result(timeout=timeout_ms/1000)
+                if result.is_vulnerable:
+                    print(f"[!] Potencial vulnerabilidad en {result.frequency} ({protocol.name})")
+                results.append(result)
+            except Exception as e:
+                print(f"[ERROR] {str(e)}")
+
+    return results
+
+def _generate_frequencies(self, step: str) -> list:
+    """Genera frecuencias en un rango (ej: 300M-900M con paso de 1M)."""
+    min_val = int(self.min_freq[:-1])
+    max_val = int(self.max_freq[:-1])
+    step_val = int(step[:-1])
+    unit = self.min_freq[-1]
+    
+    return [f"{freq}{unit}" for freq in range(min_val, max_val + 1, step_val)]
