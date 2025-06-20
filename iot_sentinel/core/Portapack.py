@@ -25,3 +25,14 @@ class PortaPackController:
         """Captura señales RAW para análisis posterior."""
         # Implementar usando hackrf_transfer
         pass
+from iot_sentinel.core import HackRFFuzzer, PortaPackController
+
+hackrf = HackRFFuzzer()
+portapack = PortaPackController()
+
+# Escanear vulnerabilidades
+results = hackrf.fuzz_range(RFProtocol.OOK)
+
+# Enviar señal de explotación (si se encuentra vulnerable)
+if any(r.is_vulnerable for r in results):
+    portapack.send_custom_signal("433M", "OOK", "AABBCCDDEEFF")
